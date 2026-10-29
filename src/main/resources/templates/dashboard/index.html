@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${pageTitle} + ' — Electricity Outage Reporting System'">Dashboard</title>
+    <meta name="description" content="Dashboard showing live summary of electricity outage reports by status."/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div class="app-layout">
+
+    <!-- Sidebar Navigation -->
+    <div th:replace="~{fragments/navbar :: sidebar}"></div>
+
+    <!-- Main Content -->
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Dashboard</h1>
+                <p class="page-subtitle">Live summary of outage reports</p>
+            </div>
+            <a th:href="@{/reports/new}" id="dashboardNewReportBtn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Report Outage
+            </a>
+        </div>
+
+        <!-- Alert Messages -->
+        <div th:replace="~{fragments/navbar :: alerts}"></div>
+
+        <!-- Stats Cards -->
+        <div class="stats-grid">
+            <a th:href="@{/reports}" class="stat-card stat-card-total" id="statTotal">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                    </svg>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-value" th:text="${stats.totalReports}" id="totalCount">0</div>
+                    <div class="stat-label">Total Reports</div>
+                </div>
+            </a>
+
+            <a th:href="@{/reports(status='REPORTED')}" class="stat-card stat-card-reported" id="statReported">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="8" x2="12" y2="12"/>
+                        <line x1="12" y1="16" x2="12.01" y2="16"/>
+                    </svg>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-value" th:text="${stats.reportedCount}" id="reportedCount">0</div>
+                    <div class="stat-label">Reported</div>
+                </div>
+            </a>
+
+            <a th:href="@{/reports(status='IN_PROGRESS')}" class="stat-card stat-card-inprogress" id="statInProgress">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="23 4 23 10 17 10"/>
+                        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+                    </svg>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-value" th:text="${stats.inProgressCount}" id="inProgressCount">0</div>
+                    <div class="stat-label">In Progress</div>
+                </div>
+            </a>
+
+            <a th:href="@{/reports(status='RESOLVED')}" class="stat-card stat-card-resolved" id="statResolved">
+                <div class="stat-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/>
+                        <polyline points="22 4 12 14.01 9 11.01"/>
+                    </svg>
+                </div>
+                <div class="stat-body">
+                    <div class="stat-value" th:text="${stats.resolvedCount}" id="resolvedCount">0</div>
+                    <div class="stat-label">Resolved</div>
+                </div>
+            </a>
+        </div>
+
+        <!-- Quick Info -->
+        <div class="info-panel">
+            <h2 class="panel-title">About This System</h2>
+            <p>The Electricity Outage Reporting System allows citizens to report electricity
+               outages and track their resolution status. Utility staff can update report
+               statuses and manage reports through the administration panel.</p>
+            <div class="info-actions">
+                <a th:href="@{/reports}" class="btn btn-secondary" id="viewAllReportsBtn">View All Reports</a>
+                <a th:href="@{/reports/new}" class="btn btn-outline" id="createReportBtn">Create Report</a>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

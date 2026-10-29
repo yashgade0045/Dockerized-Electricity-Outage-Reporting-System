@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Report #' + ${report.id} + ' — Electricity Outage Reporting System'">Report Detail</title>
+    <meta name="description" th:content="'Details of outage report #' + ${report.id} + ': ' + ${report.title}"/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div class="app-layout">
+
+    <div th:replace="~{fragments/navbar :: sidebar}"></div>
+
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" th:text="'Report #' + ${report.id}">Report #1</h1>
+                <p class="page-subtitle" th:text="${report.title}">Title</p>
+            </div>
+            <div class="header-actions">
+                <a sec:authorize="hasRole('ADMIN')"
+                   th:href="@{/reports/{id}/edit(id=${report.id})}"
+                   class="btn btn-secondary" th:id="'editReportBtn-' + ${report.id}">Edit Report</a>
+                <a th:href="@{/reports}" class="btn btn-outline" id="backToListBtn">Back to List</a>
+            </div>
+        </div>
+
+        <!-- Alerts -->
+        <div th:replace="~{fragments/navbar :: alerts}"></div>
+
+        <!-- Report Details Card -->
+        <div class="detail-card" th:id="'report-' + ${report.id}">
+            <div class="detail-header">
+                <div class="detail-meta">
+                    <span th:text="${#strings.replace(report.status.name(), '_', ' ')}"
+                          th:classappend="'badge-' + ${#strings.toLowerCase(#strings.replace(report.status.name(), '_', '-'))}"
+                          class="badge badge-lg"
+                          th:id="'status-' + ${report.id}">REPORTED</span>
+                    <span class="detail-date">
+                        Reported on
+                        <strong th:text="${#temporals.format(report.createdAt, 'dd MMM yyyy, hh:mm a')}">Date</strong>
+                    </span>
+                    <span class="detail-date" th:if="${report.createdAt != report.updatedAt}">
+                        · Updated <strong th:text="${#temporals.format(report.updatedAt, 'dd MMM yyyy, hh:mm a')}">Date</strong>
+                    </span>
+                </div>
+            </div>
+
+            <dl class="detail-list">
+                <dt>Location</dt>
+                <dd th:text="${report.location}" id="detail-location">Location</dd>
+
+                <dt>Reporter</dt>
+                <dd th:text="${report.reporterName}" id="detail-reporter">Reporter</dd>
+
+                <dt>Description</dt>
+                <dd class="description-text" th:text="${report.description}" id="detail-description">Description</dd>
+            </dl>
+        </div>
+
+        <!-- Admin: Status Update Panel -->
+        <div class="action-card" sec:authorize="hasRole('ADMIN')">
+            <h2 class="card-title">Update Status</h2>
+            <p class="card-subtitle">Change the resolution status of this report.</p>
+            <form th:action="@{/reports/{id}/status(id=${report.id})}" method="post"
+                  id="statusUpdateForm" class="status-form">
+                <select name="newStatus" id="newStatusSelect" class="form-control select-control">
+                    <option th:each="s : ${statuses}"
+                            th:value="${s.name()}"
+                            th:text="${#strings.replace(s.name(), '_', ' ')}"
+                            th:selected="${report.status.name() == s.name()}">
+                        Status
+                    </option>
+                </select>
+                <button type="submit" id="updateStatusBtn" class="btn btn-primary">Update Status</button>
+            </form>
+        </div>
+
+        <!-- Admin: Danger Zone -->
+        <div class="danger-zone" sec:authorize="hasRole('ADMIN')">
+            <h2 class="danger-title">Danger Zone</h2>
+            <div class="danger-action">
+                <div>
+                    <strong>Delete this report</strong>
+                    <p>This action is permanent and cannot be undone.</p>
+                </div>
+                <form th:action="@{/reports/{id}/delete(id=${report.id})}" method="post"
+                      id="deleteReportForm"
+                      onsubmit="return confirmDelete()">
+                    <button type="submit" id="deleteReportBtn" class="btn btn-danger">Delete Report</button>
+                </form>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

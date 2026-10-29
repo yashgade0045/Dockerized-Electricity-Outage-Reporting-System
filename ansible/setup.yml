@@ -1,0 +1,172 @@
+---
+# ============================================================
+# Ansible Playbook: Electricity Outage Reporting System Setup
+# Target: Ubuntu 22.04 LTS (Linux deployment host)
+#
+# Usage:
+#   ansible-playbook -i inventory.ini setup.yml
+#
+# For Docker Hub authentication (optional):
+#   ansible-playbook -i inventory.ini setup.yml --extra-vars "dockerhub_password=YOUR_PAT"
+#
+# NOTE: Do NOT run this against a production server without
+#       reviewing and approving the inventory.ini target hosts.
+# ============================================================
+- name: Configure and deploy Electricity Outage Reporting System
+  hosts: deployment_targets
+  become: true       # sudo required for package installation and Docker setup
+  gather_facts: true
+
+  vars:
+    app_user:      appuser
+    app_group:     appgroup
+    app_dir:       /opt/outage-app
+    data_dir:      "{{ app_dir }}/data"
+    compose_file:  "{{ app_dir }}/docker-compose.yml"
+
+  tasks:
+
+    # ── System Update ─────────────────────────────────────────
+    - name: Update apt package cache
+      ansible.builtin.apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Install required system packages
+      ansible.builtin.apt:
+        name:
+          - apt-transport-https
+          - ca-certificates
+          - curl
+          - gnupg
+          - lsb-release
+          - python3-pip
+        state: present
+
+    # ── Docker Installation ───────────────────────────────────
+    - name: Add Docker GPG key
+      ansible.builtin.apt_key:
+        url: https://download.docker.com/linux/ubuntu/gpg
+        state: present
+
+    - name: Add Docker APT repository
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64] https://download.docker.com/linux/ubuntu {{ ansible_distribution_release }} stable"
+        state: present
+
+    - name: Install Docker Engine and CLI
+      ansible.builtin.apt:
+        name:
+          - docker-ce
+          - docker-ce-cli
+          - containerd.io
+          - docker-compose-plugin
+        state: present
+        update_cache: yes
+
+    - name: Ensure Docker service is started and enabled
+      ansible.builtin.systemd:
+        name: docker
+        state: started
+        enabled: true
+
+    # ── Application User and Directories ─────────────────────
+    - name: Create application group
+      ansible.builtin.group:
+        name: "{{ app_group }}"
+        state: present
+
+    - name: Create application user (no shell, no login)
+      ansible.builtin.user:
+        name: "{{ app_user }}"
+        group: "{{ app_group }}"
+        groups: docker
+        shell: /usr/sbin/nologin
+        system: true
+        create_home: false
+        state: present
+
+    - name: Create application directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: '0755'
+      loop:
+        - "{{ app_dir }}"
+        - "{{ data_dir }}"
+
+    # ── Docker Compose Configuration ──────────────────────────
+    - name: Write docker-compose.yml for the application
+      ansible.builtin.copy:
+        dest: "{{ compose_file }}"
+        owner: "{{ app_user }}"
+        group: "{{ app_group }}"
+        mode: '0640'
+        content: |
+          version: '3.8'
+          services:
+            outage-app:
+              image: "{{ docker_image }}:{{ docker_image_tag }}"
+              container_name: outage-app
+              restart: unless-stopped
+              ports:
+                - "{{ app_port }}:8080"
+              environment:
+                - SPRING_PROFILES_ACTIVE=prod
+                - SPRING_DATASOURCE_URL=jdbc:h2:file:/app/data/outagedb;DB_CLOSE_DELAY=-1
+              volumes:
+                - "{{ data_dir }}:/app/data"
+              healthcheck:
+                test: ["CMD", "wget", "-qO-", "http://localhost:8080/actuator/health"]
+                interval: 30s
+                timeout: 10s
+                retries: 3
+                start_period: 60s
+
+    # ── Docker Registry Login (optional) ─────────────────────
+    - name: Login to Docker Hub (only if credentials provided)
+      community.docker.docker_login:
+        registry_url: https://index.docker.io/v1/
+        username: "{{ dockerhub_username }}"
+        password: "{{ dockerhub_password }}"
+      when: dockerhub_password is defined and dockerhub_password != ""
+      no_log: true   # Prevent password from appearing in logs
+
+    # ── Pull and Deploy ───────────────────────────────────────
+    - name: Pull latest application image
+      community.docker.docker_image:
+        name: "{{ docker_image }}"
+        tag: "{{ docker_image_tag }}"
+        source: pull
+        force_source: true
+
+    - name: Start application with Docker Compose
+      community.docker.docker_compose_v2:
+        project_src: "{{ app_dir }}"
+        state: present
+        pull: always
+
+    # ── Health Check ──────────────────────────────────────────
+    - name: Wait for application to become healthy
+      ansible.builtin.uri:
+        url: "http://localhost:{{ app_port }}/actuator/health"
+        return_content: true
+        status_code: 200
+      register: health_response
+      until: health_response.status == 200
+      retries: 10
+      delay: 15
+
+    - name: Print application health status
+      ansible.builtin.debug:
+        msg: "Application is healthy. Status: {{ health_response.json.status }}"
+
+    # ── Firewall Configuration ────────────────────────────────
+    - name: Allow application port through firewall (UFW)
+      community.general.ufw:
+        rule: allow
+        port: "{{ app_port }}"
+        proto: tcp
+      when: ansible_distribution == "Ubuntu"

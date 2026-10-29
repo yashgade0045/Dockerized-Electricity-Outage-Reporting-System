@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Outage Reports — Electricity Outage Reporting System</title>
+    <meta name="description" content="Browse, search, and filter all submitted electricity outage reports."/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div class="app-layout">
+
+    <div th:replace="~{fragments/navbar :: sidebar}"></div>
+
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Outage Reports</h1>
+                <p class="page-subtitle" th:text="${reports.totalElements} + ' report(s) found'">Reports</p>
+            </div>
+            <a th:href="@{/reports/new}" id="listNewReportBtn" class="btn btn-primary">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2">
+                    <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+                </svg>
+                Report Outage
+            </a>
+        </div>
+
+        <!-- Alerts -->
+        <div th:replace="~{fragments/navbar :: alerts}"></div>
+
+        <!-- Search & Filter Bar -->
+        <form th:action="@{/reports}" method="get" class="search-bar" id="searchForm">
+            <div class="search-input-wrapper">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24"
+                     fill="none" stroke="currentColor" stroke-width="2" class="search-icon">
+                    <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                </svg>
+                <input type="text" name="keyword" id="searchInput" class="form-control search-input"
+                       placeholder="Search by title, location, or reporter..."
+                       th:value="${keyword}" autocomplete="off"/>
+            </div>
+            <select name="status" id="statusFilter" class="form-control select-control"
+                    onchange="this.form.submit()">
+                <option value="" th:selected="${selectedStatus == null}">All Statuses</option>
+                <option th:each="s : ${statuses}"
+                        th:value="${s.name()}"
+                        th:text="${#strings.replace(s.name(), '_', ' ')}"
+                        th:selected="${selectedStatus != null and selectedStatus.name() == s.name()}">
+                    Status
+                </option>
+            </select>
+            <button type="submit" id="searchBtn" class="btn btn-secondary">Search</button>
+            <a th:href="@{/reports}" id="clearSearchBtn" class="btn btn-outline"
+               th:if="${keyword != null or selectedStatus != null}">Clear</a>
+        </form>
+
+        <!-- Reports Table -->
+        <div class="table-container">
+            <table class="data-table" th:if="${!reports.isEmpty()}" id="reportsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>Title</th>
+                        <th>Location</th>
+                        <th>Reporter</th>
+                        <th>Status</th>
+                        <th>Reported</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="report : ${reports.content}" th:id="'row-' + ${report.id}">
+                        <td class="id-cell" th:text="${report.id}">1</td>
+                        <td class="title-cell">
+                            <a th:href="@{/reports/{id}(id=${report.id})}"
+                               th:text="${report.title}"
+                               class="report-link">Report Title</a>
+                        </td>
+                        <td th:text="${report.location}" class="location-cell">Location</td>
+                        <td th:text="${report.reporterName}">Reporter</td>
+                        <td>
+                            <span th:text="${#strings.replace(report.status.name(), '_', ' ')}"
+                                  th:classappend="'badge-' + ${#strings.toLowerCase(#strings.replace(report.status.name(), '_', '-'))}"
+                                  class="badge">
+                                Status
+                            </span>
+                        </td>
+                        <td th:text="${#temporals.format(report.createdAt, 'dd MMM yyyy')}">Date</td>
+                        <td class="actions-cell">
+                            <a th:href="@{/reports/{id}(id=${report.id})}"
+                               class="btn-action btn-view" title="View details"
+                               th:id="'view-' + ${report.id}">View</a>
+                            <a sec:authorize="hasRole('ADMIN')"
+                               th:href="@{/reports/{id}/edit(id=${report.id})}"
+                               class="btn-action btn-edit" title="Edit report"
+                               th:id="'edit-' + ${report.id}">Edit</a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+
+            <!-- Empty State -->
+            <div th:if="${reports.isEmpty()}" class="empty-state" id="emptyState">
+                <div class="empty-icon">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" viewBox="0 0 24 24"
+                         fill="none" stroke="currentColor" stroke-width="1.5">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                </div>
+                <h2 th:if="${keyword == null and selectedStatus == null}">No reports yet</h2>
+                <h2 th:if="${keyword != null or selectedStatus != null}">No results found</h2>
+                <p th:if="${keyword == null and selectedStatus == null}">
+                    No outage reports have been submitted yet. Be the first to report an outage.
+                </p>
+                <p th:if="${keyword != null or selectedStatus != null}">
+                    Try adjusting your search term or status filter.
+                </p>
+                <a th:href="@{/reports/new}" class="btn btn-primary" id="emptyStateNewBtn">Report an Outage</a>
+            </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" th:if="${reports.totalPages > 1}" id="pagination">
+            <a th:href="@{/reports(page=${reports.number - 1}, keyword=${keyword}, status=${selectedStatus})}"
+               class="page-btn" th:classappend="${reports.first} ? 'disabled'"
+               id="prevPageBtn">&#8592; Prev</a>
+
+            <span th:each="pageNum : ${#numbers.sequence(0, reports.totalPages - 1)}">
+                <a th:href="@{/reports(page=${pageNum}, keyword=${keyword}, status=${selectedStatus})}"
+                   th:text="${pageNum + 1}"
+                   class="page-btn"
+                   th:classappend="${pageNum == reports.number} ? 'active'"
+                   th:id="'page-' + ${pageNum + 1}">1</a>
+            </span>
+
+            <a th:href="@{/reports(page=${reports.number + 1}, keyword=${keyword}, status=${selectedStatus})}"
+               class="page-btn" th:classappend="${reports.last} ? 'disabled'"
+               id="nextPageBtn">Next &#8594;</a>
+        </div>
+
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

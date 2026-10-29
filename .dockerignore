@@ -1,0 +1,36 @@
+# Maven build output (will be regenerated inside container)
+target/
+*.jar
+
+# IDE files
+.idea/
+*.iml
+.eclipse/
+.settings/
+.project
+.classpath
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Logs
+*.log
+logs/
+
+# Documentation (not needed in image)
+docs/
+README.md
+
+# Ansible (not needed in image)
+ansible/
+
+# Jenkins (not needed in image)
+Jenkinsfile
+
+# Test files (tests run in CI, not in production image)
+src/test/

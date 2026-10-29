@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="'Edit Report #' + ${reportDto.id} + ' — Electricity Outage Reporting System'">Edit Report</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div class="app-layout">
+
+    <div th:replace="~{fragments/navbar :: sidebar}"></div>
+
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title" th:text="'Edit Report #' + ${reportDto.id}">Edit Report</h1>
+                <p class="page-subtitle">Modify the details of this outage report</p>
+            </div>
+            <a th:href="@{/reports/{id}(id=${reportDto.id})}" class="btn btn-outline" id="cancelEditBtn">Cancel</a>
+        </div>
+
+        <div class="form-card">
+            <form th:action="@{/reports/{id}/edit(id=${reportDto.id})}"
+                  th:object="${reportDto}" method="post"
+                  id="editReportForm" novalidate>
+
+                <!-- Title -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('title')} ? 'has-error'">
+                    <label for="title" class="form-label">Outage Title <span class="required">*</span></label>
+                    <input type="text" id="title" th:field="*{title}" class="form-control" maxlength="150"/>
+                    <div th:if="${#fields.hasErrors('title')}" class="field-error"
+                         th:errors="*{title}" id="titleError">Error</div>
+                </div>
+
+                <!-- Location -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('location')} ? 'has-error'">
+                    <label for="location" class="form-label">Location <span class="required">*</span></label>
+                    <input type="text" id="location" th:field="*{location}" class="form-control" maxlength="255"/>
+                    <div th:if="${#fields.hasErrors('location')}" class="field-error"
+                         th:errors="*{location}" id="locationError">Error</div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('description')} ? 'has-error'">
+                    <label for="description" class="form-label">Description <span class="required">*</span></label>
+                    <textarea id="description" th:field="*{description}" class="form-control textarea"
+                              rows="5" maxlength="2000"></textarea>
+                    <div th:if="${#fields.hasErrors('description')}" class="field-error"
+                         th:errors="*{description}" id="descriptionError">Error</div>
+                </div>
+
+                <!-- Reporter Name -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('reporterName')} ? 'has-error'">
+                    <label for="reporterName" class="form-label">Reporter Name <span class="required">*</span></label>
+                    <input type="text" id="reporterName" th:field="*{reporterName}"
+                           class="form-control" maxlength="100"/>
+                    <div th:if="${#fields.hasErrors('reporterName')}" class="field-error"
+                         th:errors="*{reporterName}" id="reporterNameError">Error</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="saveEditBtn" class="btn btn-primary">Save Changes</button>
+                    <a th:href="@{/reports/{id}(id=${reportDto.id})}" class="btn btn-outline" id="cancelEditBtn2">Cancel</a>
+                </div>
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>

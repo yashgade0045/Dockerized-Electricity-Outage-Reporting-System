@@ -1,0 +1,65 @@
+# ============================================================
+# .gitignore — Electricity Outage Reporting System
+# ============================================================
+
+# ── Maven build output ─────────────────────────────────────
+target/
+!.mvn/wrapper/maven-wrapper.jar
+!**/src/main/**/target/
+!**/src/test/**/target/
+
+# ── IDE files ──────────────────────────────────────────────
+.idea/
+*.iml
+*.ipr
+*.iws
+.eclipse/
+.settings/
+.project
+.classpath
+*.sts4-cache
+.factorypath
+.vscode/
+
+# ── OS files ───────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Logs ───────────────────────────────────────────────────
+*.log
+logs/
+
+# ── Spring Boot specific ───────────────────────────────────
+spring-shell.log
+
+# ── H2 database files (local data directory) ───────────────
+data/
+*.db
+*.mv.db
+*.trace.db
+
+# ── Docker ─────────────────────────────────────────────────
+# (Do not ignore Dockerfile or docker-compose.yml — those belong in VCS)
+
+# ── Ansible secrets — never commit real inventory ──────────
+ansible/inventory.ini
+# Keep inventory.ini.example in VCS (it has no secrets)
+
+# ── Environment / secrets — NEVER commit these ─────────────
+.env
+.env.local
+*.secret
+*credentials*
+*password*
+application-prod.properties
+application-secrets.properties
+
+# ── Test output ────────────────────────────────────────────
+selenium-screenshots/
+test-results/
+surefire-reports/
+
+# ── Evidence folder (screenshots, logs captured manually) ──
+evidence/screenshots/
+evidence/logs/

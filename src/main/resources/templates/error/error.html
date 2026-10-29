@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title th:text="${statusCode} + ' Error — Electricity Outage Reporting System'">Error</title>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body style="background:#f8f9fa; min-height:100vh; display:flex; align-items:center; justify-content:center; font-family:'Inter',sans-serif;">
+
+<div style="text-align:center; padding:40px 24px; max-width:480px; margin:auto;">
+    <div style="font-size:5rem; font-weight:800; color:#e9ecef; line-height:1;"
+         th:text="${statusCode}">404</div>
+    <h1 style="font-size:1.4rem; font-weight:700; color:#343a40; margin:12px 0 8px;"
+        th:text="${errorTitle}">Page Not Found</h1>
+    <p style="font-size:0.9rem; color:#adb5bd; margin-bottom:8px;"
+       th:text="${errorMessage}">The requested resource could not be found.</p>
+    <p style="font-size:0.8rem; color:#ced4da; margin-bottom:24px;" th:if="${requestUri}">
+        Path: <code th:text="${requestUri}">/unknown</code>
+    </p>
+    <div style="display:flex; gap:10px; justify-content:center; flex-wrap:wrap;">
+        <a th:href="@{/}" id="errorGoHomeBtn"
+           style="display:inline-flex;align-items:center;padding:8px 18px;background:#1a2744;color:#fff;border-radius:6px;font-size:0.85rem;font-weight:500;text-decoration:none;">
+            Go to Dashboard
+        </a>
+        <a th:href="@{/reports}" id="errorViewReportsBtn"
+           style="display:inline-flex;align-items:center;padding:8px 18px;background:transparent;color:#495057;border:1px solid #dee2e6;border-radius:6px;font-size:0.85rem;font-weight:500;text-decoration:none;">
+            View Reports
+        </a>
+    </div>
+</div>
+
+</body>
+</html>

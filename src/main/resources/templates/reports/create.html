@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Report an Outage — Electricity Outage Reporting System</title>
+    <meta name="description" content="Submit a new electricity outage report."/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+<div class="app-layout">
+
+    <div th:replace="~{fragments/navbar :: sidebar}"></div>
+
+    <main class="main-content" id="main-content">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Report an Outage</h1>
+                <p class="page-subtitle">Submit a new electricity outage report</p>
+            </div>
+            <a th:href="@{/reports}" class="btn btn-outline" id="cancelCreateBtn">Cancel</a>
+        </div>
+
+        <div class="form-card">
+            <form th:action="@{/reports/new}" th:object="${reportDto}" method="post"
+                  id="createReportForm" novalidate>
+
+                <!-- Title -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('title')} ? 'has-error'">
+                    <label for="title" class="form-label">
+                        Outage Title <span class="required">*</span>
+                    </label>
+                    <input type="text" id="title" th:field="*{title}" class="form-control"
+                           placeholder="e.g. Power outage in MG Road area"
+                           maxlength="150"/>
+                    <div th:if="${#fields.hasErrors('title')}" class="field-error"
+                         th:errors="*{title}" id="titleError">Error</div>
+                    <div class="field-hint">5–150 characters. Be specific about the area and issue.</div>
+                </div>
+
+                <!-- Location -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('location')} ? 'has-error'">
+                    <label for="location" class="form-label">
+                        Location <span class="required">*</span>
+                    </label>
+                    <input type="text" id="location" th:field="*{location}" class="form-control"
+                           placeholder="e.g. MG Road, Sector 5, Nashik"
+                           maxlength="255"/>
+                    <div th:if="${#fields.hasErrors('location')}" class="field-error"
+                         th:errors="*{location}" id="locationError">Error</div>
+                    <div class="field-hint">Street address, neighborhood, or landmark.</div>
+                </div>
+
+                <!-- Description -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('description')} ? 'has-error'">
+                    <label for="description" class="form-label">
+                        Description <span class="required">*</span>
+                    </label>
+                    <textarea id="description" th:field="*{description}" class="form-control textarea"
+                              placeholder="Describe the outage: when it started, how many households are affected, any visible damage..."
+                              rows="5" maxlength="2000"></textarea>
+                    <div th:if="${#fields.hasErrors('description')}" class="field-error"
+                         th:errors="*{description}" id="descriptionError">Error</div>
+                    <div class="field-hint">10–2000 characters. Include as much detail as possible.</div>
+                </div>
+
+                <!-- Reporter Name -->
+                <div class="form-group" th:classappend="${#fields.hasErrors('reporterName')} ? 'has-error'">
+                    <label for="reporterName" class="form-label">
+                        Your Name <span class="required">*</span>
+                    </label>
+                    <input type="text" id="reporterName" th:field="*{reporterName}" class="form-control"
+                           placeholder="e.g. Ramesh Kulkarni"
+                           maxlength="100"/>
+                    <div th:if="${#fields.hasErrors('reporterName')}" class="field-error"
+                         th:errors="*{reporterName}" id="reporterNameError">Error</div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" id="submitReportBtn" class="btn btn-primary">Submit Report</button>
+                    <a th:href="@{/reports}" class="btn btn-outline" id="cancelCreateBtn2">Cancel</a>
+                </div>
+
+            </form>
+        </div>
+    </main>
+</div>
+
+<script th:src="@{/js/main.js}"></script>
+</body>
+</html>
